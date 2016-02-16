@@ -1,4 +1,4 @@
-// Copyright 2015 The Bazel Authors. All rights reserved.
+// Copyright 2015, 2016 The Bazel Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
   private static Logger LOG = Logger.getLogger(ExperimentalEventHandler.class.getName());
 
   private final AnsiTerminal terminal;
+  private boolean debugAllEvents;
 
   public final int terminalWidth;
 
@@ -34,10 +35,22 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
     super(outErr, options);
     this.terminal = new AnsiTerminal(outErr.getErrorStream());
     this.terminalWidth = (options.terminalColumns > 0 ? options.terminalColumns : 80);
+    this.debugAllEvents = options.experimentalUiDebugAllEvents;
   }
 
   @Override
   public void handle(Event event) {
+    // Debugging only: show all events visible to the new UI.
+    if (debugAllEvents) {
+      try {
+        outErr.getOutputStream().write((event.toString() + "\n").getBytes());
+        outErr.getOutputStream().flush();
+      } catch (IOException e) {
+        LOG.warning("IO Error writing to output stream: " + e);
+      }
+      return;
+    }
+    // The actual new UI.
   }
 
   public void resetTerminal() {

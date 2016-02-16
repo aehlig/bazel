@@ -147,6 +147,13 @@ public class BlazeCommandEventHandler implements EventHandler {
         help = "Enable the experimental new Bazel UI.")
     public boolean experimentalUi;
 
+    @Option(name = "experimental_ui_debug_all_events",
+        defaultValue = "false",
+        category = "hidden",
+        help = "Report all events known to the experimental new Bazel UI.")
+    public boolean experimentalUiDebugAllEvents;
+
+
     public boolean useColor() {
       return useColorEnum == UseColor.YES || (useColorEnum == UseColor.AUTO && isATty);
     }
