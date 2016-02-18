@@ -15,12 +15,14 @@ package com.google.devtools.build.lib.runtime;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.devtools.build.lib.events.Event;
+import com.google.devtools.build.lib.events.EventKind;
 import com.google.devtools.build.lib.pkgcache.LoadingPhaseCompleteEvent;
 import com.google.devtools.build.lib.util.io.AnsiTerminal;
 import com.google.devtools.build.lib.util.io.AnsiTerminalWriter;
 import com.google.devtools.build.lib.util.io.OutErr;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 
 /**
@@ -46,7 +48,7 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
   }
 
   @Override
-  public void handle(Event event) {
+  public synchronized void handle(Event event) {
     try {
       clearProgressBar();
       if (debugAllEvents) {
@@ -55,7 +57,17 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
         outErr.getOutputStream().write((event.toString() + "\n").getBytes());
         outErr.getOutputStream().flush();
       } else {
-        // The actual new UI.
+        switch(event.getKind()) {
+          case STDOUT:
+          case STDERR:
+            terminal.flush();
+            OutputStream stream = event.getKind() == EventKind.STDOUT ?
+                outErr.getOutputStream() : outErr.getErrorStream();
+            stream.write(event.getMessageBytes());
+            stream.write(new byte[] { 10, 13 });
+            stream.flush();
+            break;
+        }
       }
       addProgressBar();
       terminal.flush();
