@@ -72,12 +72,41 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
             stream.write(new byte[] { 10, 13 });
             stream.flush();
             break;
+          case ERROR:
+          case WARNING:
+          case INFO:
+            setEventKindColor(event.getKind());
+            terminal.writeString(event.getKind() + ": ");
+            terminal.resetTerminal();
+            if (event.getLocation() != null) {
+              terminal.writeString(event.getLocation() + ": ");
+            }
+            if (event.getMessage() != null) {
+              terminal.writeString(event.getMessage());
+            }
+            crlf();
+            break;
         }
       }
       addProgressBar();
       terminal.flush();
     } catch (IOException e) {
       LOG.warning("IO Error writing to output stream: " + e);
+    }
+  }
+
+  private void setEventKindColor(EventKind kind) throws IOException {
+    switch(kind) {
+      case ERROR:
+        terminal.textRed();
+        terminal.textBold();
+        break;
+      case WARNING:
+        terminal.textMagenta();
+        break;
+      case INFO:
+        terminal.textGreen();
+        break;
     }
   }
 
@@ -90,16 +119,7 @@ public class ExperimentalEventHandler extends BlazeCommandEventHandler {
   @Subscribe
   public void loadingComplete(LoadingPhaseCompleteEvent event) {
     stateTracker.loadingComplete(event);
-    try {
-      clearProgressBar();
-      terminal.textGreen();
-      terminal.writeString("INFO:");
-      terminal.resetTerminal();
-      terminal.writeString(" " + event.getTargets().size() + " Target(s)\n");
-      addProgressBar();
-    } catch (IOException e) {
-      LOG.warning("IO Error writing to output stream: " + e);
-    }
+    refresh();
   }
 
   @Subscribe
