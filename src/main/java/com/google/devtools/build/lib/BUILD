@@ -290,6 +290,16 @@ java_library(
     ],
 )
 
+# External build-event reporting infrastructure
+java_library(
+    name = "buildeventstream",
+    srcs = glob(["buildeventstream/*.java"]),
+    deps = [
+        ":cmdline",
+        "//third_party:jsr305",
+    ],
+)
+
 ########################################################################
 #
 # The "foundation" library (concurrent, events, util, vfs, inmemoryfs, options)
