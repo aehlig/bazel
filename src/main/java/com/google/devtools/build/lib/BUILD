@@ -865,6 +865,7 @@ java_library(
     ),
     deps = [
         ":build-base",
+        ":buildeventstream",
         ":clock",
         ":cmdline",
         ":collect",
