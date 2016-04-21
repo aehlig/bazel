@@ -157,6 +157,13 @@ public class BlazeCommandEventHandler implements EventHandler {
     )
     public boolean experimentalUiDebugAllEvents;
 
+    @Option(
+      name = "build_event_stream_text_file",
+      defaultValue = "",
+      category = "hidden",
+      help = "If non-empty, write a textual representation of the build event stream to that file"
+    )
+    public String buildEventStreamTextFile;
 
     public boolean useColor() {
       return useColorEnum == UseColor.YES || (useColorEnum == UseColor.AUTO && isATty);
