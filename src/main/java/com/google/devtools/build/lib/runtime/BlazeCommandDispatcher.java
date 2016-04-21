@@ -27,10 +27,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.io.Flushables;
+import com.google.devtools.build.lib.buildeventstream.TextFormatFileTransport;
 import com.google.devtools.build.lib.events.Event;
 import com.google.devtools.build.lib.events.EventHandler;
 import com.google.devtools.build.lib.events.Reporter;
 import com.google.devtools.build.lib.flags.InvocationPolicyEnforcer;
+import com.google.devtools.build.lib.runtime.BuildEventStreamer;
 import com.google.devtools.build.lib.util.AbruptExitException;
 import com.google.devtools.build.lib.util.AnsiStrippingOutputStream;
 import com.google.devtools.build.lib.util.ExitCode;
@@ -426,6 +428,12 @@ public class BlazeCommandDispatcher {
     Reporter reporter = env.getReporter();
     reporter.addHandler(handler);
     env.getEventBus().register(handler);
+    if (eventHandlerOptions.buildEventTextFile != "") {
+      BuildEventStreamer streamer = new BuildEventStreamer(ImmutableSet.of(
+          new TextFormatFileTransport(eventHandlerOptions.buildEventTextFile)));
+      reporter.addHandler(streamer);
+      env.getEventBus().register(streamer);
+    }
 
     // We register an ANSI-allowing handler associated with {@code handler} so that ANSI control
     // codes can be re-introduced later even if blaze is invoked with --color=no. This is useful
