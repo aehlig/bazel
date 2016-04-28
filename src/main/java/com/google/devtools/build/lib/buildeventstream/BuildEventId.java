@@ -35,13 +35,15 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class BuildEventId implements Serializable {
+  private final BuildEventStreamProtos.BuildEventType eventType;
   private final String opaque;
+  private final int opaqueCount;
   @Nullable private final List<String> targetPattern;
   @Nullable private final Label target;
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetPattern, target, opaque);
+    return Objects.hash(eventType, targetPattern, target, opaque, opaqueCount);
   }
 
   @Override
@@ -50,14 +52,16 @@ public final class BuildEventId implements Serializable {
       return false;
     }
     BuildEventId that = (BuildEventId) other;
-    return Objects.equals(this.targetPattern, that.targetPattern)
+    return Objects.equals(this.eventType, that.eventType)
+        && Objects.equals(this.targetPattern, that.targetPattern)
         && Objects.equals(this.target, that.target)
-        && Objects.equals(this.opaque, that.opaque);
+        && Objects.equals(this.opaque, that.opaque)
+        && Objects.equals(this.opaqueCount, that.opaqueCount);
   }
 
   @Override
   public String toString() {
-    String id = "[ID|";
+    String id = "[ID|" + eventType + "|";
     if (target != null) {
       id += target.toString();
     }
@@ -67,14 +71,17 @@ public final class BuildEventId implements Serializable {
         id += "'" + s + "'";
       }
     }
-    id += "|" + opaque + "]";
+    id += "|" + opaque + " - " + opaqueCount + "]";
     return id;
   }
 
   public BuildEventStreamProtos.BuildEventId asStreamProto() {
     BuildEventStreamProtos.BuildEventId.Builder builder =
-        BuildEventStreamProtos.BuildEventId.newBuilder();
-    builder.setOpaque(opaque);
+        BuildEventStreamProtos.BuildEventId
+        .newBuilder()
+        .setEventType(eventType)
+        .setOpaque(opaque)
+        .setOpaqueCount(opaqueCount);
     if (target != null) {
       builder.setTarget(target.toString());
     }
@@ -86,22 +93,31 @@ public final class BuildEventId implements Serializable {
     return builder.build();
   }
 
-  public BuildEventId(String opaque) {
+  public BuildEventId(BuildEventStreamProtos.BuildEventType eventType, String opaque,
+      int opaqueCount) {
+    this.eventType = eventType;
     this.targetPattern = null;
     this.target = null;
     this.opaque = opaque;
+    this.opaqueCount = opaqueCount;
   }
 
-  public BuildEventId(Label target, String opaque) {
+  public BuildEventId(BuildEventStreamProtos.BuildEventType eventType, Label target,
+      String opaque, int opaqueCount) {
+    this.eventType = eventType;
     this.targetPattern = null;
     this.target = target;
     this.opaque = opaque;
+    this.opaqueCount = opaqueCount;
   }
 
-  public BuildEventId(List<String> targetPattern, String opaque) {
+  public BuildEventId(BuildEventStreamProtos.BuildEventType eventType,
+      List<String> targetPattern, String opaque, int opaqueCount) {
+    this.eventType = eventType;
     this.targetPattern = targetPattern;
     this.target = null;
     this.opaque = opaque;
+    this.opaqueCount = opaqueCount;
   }
 
   public Label getTarget() {
