@@ -296,6 +296,7 @@ java_library(
     srcs = glob(["buildeventstream/*.java"]),
     deps = [
         ":cmdline",
+        "//third_party:guava",
         "//third_party:jsr305",
     ],
 )
