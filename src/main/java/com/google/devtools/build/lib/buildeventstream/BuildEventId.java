@@ -127,5 +127,10 @@ public final class BuildEventId implements Serializable {
   public List<String> getTargetPattern() {
     return targetPattern;
   }
+
+  public static BuildEventId targetPatternExpanded(List<String> targetPattern) {
+    return new BuildEventId(
+        BuildEventStreamProtos.BuildEventType.PATTERN_EXPANDED, targetPattern, "", 0);
+  }
 }
 
