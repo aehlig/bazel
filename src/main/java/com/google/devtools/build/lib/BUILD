@@ -297,8 +297,9 @@ java_library(
     deps = [
         ":cmdline",
         "//src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
-        "//third_party/protobuf",
+        "//third_party:guava",
         "//third_party:jsr305",
+        "//third_party/protobuf",
     ],
 )
 
