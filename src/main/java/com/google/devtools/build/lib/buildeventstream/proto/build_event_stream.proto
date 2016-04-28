@@ -46,6 +46,21 @@ message Progress {
 message Aborted {
 }
 
+// Payload of an event indicating the beginning of a new build. Usually, events
+// of those type start a new build-event stream. The target pattern requested
+// to be build is contained in one of the announced child events; it is an
+// invariant that precisely one of the announced child events has a non-empty
+// target pattern.
+message BuildStarted {
+  string uuid = 1;
+
+  // Start of the build in ms since the epoche.
+  int64 start_time = 2;
+
+  // Human-readable description
+  string options_description = 3;
+}
+
 
 // Message describing a build event. Events will have an identifier that
 // is unique within a given build invocation; they also announce follow-up
@@ -59,5 +74,6 @@ message BuildEvent {
     GenericEvent generic = 3;
     Aborted aborted = 4;
     Progress progress = 5;
+    BuildStarted started = 6;
   };
 }

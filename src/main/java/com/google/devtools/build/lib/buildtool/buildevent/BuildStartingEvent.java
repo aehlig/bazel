@@ -14,14 +14,22 @@
 
 package com.google.devtools.build.lib.buildtool.buildevent;
 
+import com.google.common.collect.ImmutableList;
 import com.google.devtools.build.lib.buildtool.BuildRequest;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
+import com.google.devtools.build.lib.buildeventstream.ProgressEvent;
+
+import java.util.Collection;
 
 /**
  * This event is fired from BuildTool#startRequest().
  * At this point, the set of target patters are known, but have
  * yet to be parsed.
  */
-public class BuildStartingEvent {
+public class BuildStartingEvent implements BuildEvent {
   private final String outputFileSystem;
   private final BuildRequest request;
 
@@ -46,5 +54,28 @@ public class BuildStartingEvent {
    */
   public BuildRequest getRequest() {
     return request;
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return new BuildEventId("START");
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    return ImmutableList.of(
+        ProgressEvent.INITIAL_PROGRESS_UPDATE,
+        BuildEventId.targetPatternExpanded(request.getTargets()));
+  }
+
+  @Override
+  public BuildEventStreamProtos.BuildEvent asStreamProto() {
+    BuildEventStreamProtos.BuildStarted started =
+        BuildEventStreamProtos.BuildStarted.newBuilder()
+        .setUuid(request.getId().toString())
+        .setStartTime(request.getStartTime())
+        .setOptionsDescription(request.getOptionsDescription())
+        .build();
+    return GenericBuildEvent.protoChaining(this).setStarted(started).build();
   }
 }
