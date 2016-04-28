@@ -14,14 +14,21 @@
 
 package com.google.devtools.build.lib.buildtool.buildevent;
 
+import com.google.common.collect.ImmutableList;
 import com.google.devtools.build.lib.buildtool.BuildRequest;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
+import com.google.devtools.build.lib.buildeventstream.ProgressEvent;
+
+import java.util.Collection;
 
 /**
  * This event is fired from BuildTool#startRequest().
  * At this point, the set of target patters are known, but have
  * yet to be parsed.
  */
-public class BuildStartingEvent {
+public class BuildStartingEvent implements BuildEvent {
   private final String outputFileSystem;
   private final BuildRequest request;
 
@@ -46,5 +53,24 @@ public class BuildStartingEvent {
    */
   public BuildRequest getRequest() {
     return request;
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return new BuildEventId("START");
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    return ImmutableList.of(
+        ProgressEvent.INITIAL_PROGRESS_UPDATE,
+        BuildEventId.targetPatternExpanded(request.getTargets()));
+  }
+
+  @Override
+  public String getTextRepresentation() {
+    // TODO(aehlig): This representation is enough for debugging, but does not
+    // contain all the relevenat information available at start of the build.
+    return GenericBuildEvent.textChaining(this) + "  build starting\n";
   }
 }
