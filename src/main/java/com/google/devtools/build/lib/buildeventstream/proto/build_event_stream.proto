@@ -38,6 +38,11 @@ enum BuildEventType {
   // Event reporting that a target was built completely; this does not
   // include running the test if the target is a test target.
   TARGET_COMPLETED = 4;
+
+  // Event reporting that an action was completed (not all actions are
+  // reported, only the onces that can be considered important; is includes
+  // all failed actions).
+  ACTION_COMPLETED = 5;
 }
 
 // Identifier for a build event. It is deliberately structured to also provide
@@ -131,6 +136,29 @@ message BuildStarted {
 // target or target pattern it was expanded to.
 message PatternExpanded {}
 
+// Payload of the event indicating the completion of an action. The main purpose
+// of posting those events is to provide details on the root cause for a target
+// failing; however, consumers of the build-event stream should not assume that
+// only failed actions are posted.
+message ActionExecuted {
+  bool success = 1;
+
+  // Location where to find the standard output of the action
+  // (e.g., a file path).
+  string stdout = 2;
+
+  // Location where to find the standard error of the action
+  // (e.g., a file path).
+  string stderr = 3;
+}
+
+// Payload of the event indicating the completion of a target. The target is
+// specified in the id. If the target failed the root causes are provided as
+// children events.
+message TargetComplete {
+  bool success = 1;
+}
+
 
 // Message describing a build event. Events will have an identifier that
 // is unique within a given build invocation; they also announce follow-up
@@ -145,5 +173,7 @@ message BuildEvent {
     Aborted aborted = 4;
     BuildStarted started = 5;
     PatternExpanded expanded = 6;
+    ActionExecuted action = 7;
+    TargetComplete completed = 8;
   };
 }
