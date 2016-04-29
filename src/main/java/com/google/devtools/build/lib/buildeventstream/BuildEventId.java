@@ -119,5 +119,9 @@ public final class BuildEventId implements Serializable {
   public static BuildEventId targetCompleted(Label target) {
     return new BuildEventId(target, "Target completed");
   }
+
+  public static BuildEventId actionCompleted(Label target) {
+    return new BuildEventId(target, "action completed");
+  }
 }
 

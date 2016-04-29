@@ -10,6 +10,8 @@ java_library(
         "cache/*.java",
     ]),
     deps = [
+        "//src/main/java/com/google/devtools/build/lib:buildeventstream",
+        "//src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "//src/main/java/com/google/devtools/build/lib:collect",
         "//src/main/java/com/google/devtools/build/lib:common",
         "//src/main/java/com/google/devtools/build/lib:concurrent",
