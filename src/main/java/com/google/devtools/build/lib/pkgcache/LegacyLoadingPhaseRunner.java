@@ -179,7 +179,8 @@ public final class LegacyLoadingPhaseRunner extends LoadingPhaseRunner {
 
     eventBus.post(new TargetParsingCompleteEvent(targets.getTargets(),
         filteredTargets, testFilteredTargets,
-        timer.stop().elapsed(TimeUnit.MILLISECONDS)));
+        timer.stop().elapsed(TimeUnit.MILLISECONDS),
+        targetPatterns));
 
     if (targets.hasError()) {
       eventHandler.handle(Event.warn("Target pattern parsing failed. Continuing anyway"));
