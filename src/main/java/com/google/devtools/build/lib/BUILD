@@ -409,6 +409,7 @@ java_library(
         ":syntax",
     ],
     deps = [
+        ":buildeventstream",
         ":cmdline",
         ":collect",
         ":common",

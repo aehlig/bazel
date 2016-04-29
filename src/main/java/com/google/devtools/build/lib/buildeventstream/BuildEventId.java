@@ -98,5 +98,9 @@ public final class BuildEventId implements Serializable {
   public static BuildEventId targetPatternExpanded(List<String> targetPattern) {
     return new BuildEventId(targetPattern, "Target pattern expanded");
   }
+
+  public static BuildEventId targetCompleted(Label target) {
+    return new BuildEventId(target, "Target completed");
+  }
 }
 

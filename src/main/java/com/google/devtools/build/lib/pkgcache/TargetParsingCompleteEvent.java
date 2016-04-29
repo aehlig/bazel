@@ -15,18 +15,25 @@ package com.google.devtools.build.lib.pkgcache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
 import com.google.devtools.build.lib.cmdline.Label;
 import com.google.devtools.build.lib.packages.Target;
+import com.google.devtools.build.lib.packages.TargetUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This event is fired just after target pattern evaluation is completed.
  */
-public class TargetParsingCompleteEvent {
+public class TargetParsingCompleteEvent implements BuildEvent {
 
+  private final ImmutableList<String> originalTargetPattern;
   private final ImmutableSet<Target> targets;
   private final ImmutableSet<Target> filteredTargets;
   private final ImmutableSet<Target> testFilteredTargets;
@@ -39,16 +46,18 @@ public class TargetParsingCompleteEvent {
    */
   public TargetParsingCompleteEvent(Collection<Target> targets,
       Collection<Target> filteredTargets, Collection<Target> testFilteredTargets,
-      long timeInMs) {
+      long timeInMs, List<String> originalTargetPattern) {
     this.timeInMs = timeInMs;
     this.targets = ImmutableSet.copyOf(targets);
     this.filteredTargets = ImmutableSet.copyOf(filteredTargets);
     this.testFilteredTargets = ImmutableSet.copyOf(testFilteredTargets);
+    this.originalTargetPattern = ImmutableList.copyOf(originalTargetPattern);
   }
 
   @VisibleForTesting
   public TargetParsingCompleteEvent(Collection<Target> targets) {
-    this(targets, ImmutableSet.<Target>of(), ImmutableSet.<Target>of(), 0);
+    this(targets, ImmutableSet.<Target>of(), ImmutableSet.<Target>of(), 0,
+        ImmutableList.<String>of());
   }
 
   /**
@@ -83,5 +92,28 @@ public class TargetParsingCompleteEvent {
 
   public long getTimeInMs() {
     return timeInMs;
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return BuildEventId.targetPatternExpanded(originalTargetPattern);
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    ImmutableList.Builder childrenBuilder = ImmutableList.builder();
+    for (Target target : targets) {
+      // Test suits won't produce a target-complete event, so do not anounce their
+      // completion as children.
+      if (!TargetUtils.isTestSuiteRule(target)){
+        childrenBuilder.add(BuildEventId.targetCompleted(target.getLabel()));
+      }
+    }
+    return childrenBuilder.build();
+  }
+
+  @Override
+  public String getTextRepresentation() {
+    return GenericBuildEvent.textChaining(this) + "  target pattern expanded\n";
   }
 }
