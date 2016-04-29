@@ -484,6 +484,7 @@ java_library(
     ],
     deps = [
         ":base-util",
+        ":buildeventstream",
         ":cmdline",
         ":collect",
         ":common",
