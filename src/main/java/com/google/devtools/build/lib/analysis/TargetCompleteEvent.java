@@ -14,7 +14,12 @@
 
 package com.google.devtools.build.lib.analysis;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
 import com.google.devtools.build.lib.cmdline.Label;
 import com.google.devtools.build.lib.collect.nestedset.NestedSet;
 import com.google.devtools.build.lib.collect.nestedset.NestedSetBuilder;
@@ -22,10 +27,12 @@ import com.google.devtools.build.lib.collect.nestedset.Order;
 import com.google.devtools.build.lib.util.Preconditions;
 import com.google.devtools.build.skyframe.SkyValue;
 
+import java.util.Collection;
+
 /**
  * This event is fired as soon as a target is either built or fails.
  */
-public final class TargetCompleteEvent implements SkyValue {
+public final class TargetCompleteEvent implements SkyValue, BuildEvent {
 
   private final ConfiguredTarget target;
   private final NestedSet<Label> rootCauses;
@@ -71,5 +78,28 @@ public final class TargetCompleteEvent implements SkyValue {
    */
   public Iterable<Label> getRootCauses() {
     return rootCauses;
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return BuildEventId.targetCompleted(getTarget().getLabel());
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    ImmutableList.Builder childrenBuilder = ImmutableList.builder();
+    for (Label label : getRootCauses()) {
+      childrenBuilder.add(BuildEventId.actionCompleted(label));
+    }
+    return childrenBuilder.build();
+  }
+
+  @Override
+  public BuildEventStreamProtos.BuildEvent asStreamProto() {
+    BuildEventStreamProtos.TargetComplete complete =
+        BuildEventStreamProtos.TargetComplete.newBuilder()
+        .setSuccess(!failed())
+        .build();
+    return GenericBuildEvent.protoChaining(this).setCompleted(complete).build();
   }
 }

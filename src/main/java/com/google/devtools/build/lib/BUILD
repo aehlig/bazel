@@ -497,6 +497,7 @@ java_library(
     ],
     deps = [
         ":base-util",
+        ":buildeventstream",
         ":collect",
         ":concurrent",
         ":events",
@@ -514,6 +515,7 @@ java_library(
         ":util",
         ":vfs",
         "//src/main/java/com/google/devtools/build/lib/actions",
+        "//src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "//src/main/java/com/google/devtools/build/lib/cmdline",
         "//src/main/java/com/google/devtools/build/skyframe",
         "//src/main/java/com/google/devtools/common/options",

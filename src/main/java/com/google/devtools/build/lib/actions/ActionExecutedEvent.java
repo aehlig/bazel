@@ -14,11 +14,19 @@
 
 package com.google.devtools.build.lib.actions;
 
+import com.google.common.collect.ImmutableList;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
+
+import java.util.Collection;
+
 /**
  * This event is fired during the build, when an action is executed. It contains information about
  * the action: the Action itself, and the output file names its stdout and stderr are recorded in.
  */
-public class ActionExecutedEvent {
+public class ActionExecutedEvent implements BuildEvent {
   private final Action action;
   private final ActionExecutionException exception;
   private final String stdout;
@@ -47,5 +55,40 @@ public class ActionExecutedEvent {
 
   public String getStderr() {
     return stderr;
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return BuildEventId.actionCompleted(getAction().getOwner().getLabel());
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    return ImmutableList.<BuildEventId>of();
+  }
+
+  @Override
+  public BuildEventStreamProtos.BuildEvent asStreamProto() {
+    BuildEventStreamProtos.ActionExecuted.Builder actionBuilder =
+        BuildEventStreamProtos.ActionExecuted.newBuilder()
+        .setSuccess(getException() == null);
+    if (exception.getExitCode() != null) {
+      actionBuilder.setExitCode(exception.getExitCode().getNumericExitCode());
+    }
+    if (stdout != null) {
+      actionBuilder.setStdout(
+        BuildEventStreamProtos.File.newBuilder()
+        .setName("stdout")
+        .setUri(stdout)
+        .build());
+    }
+    if (stderr != null) {
+      actionBuilder.setStdout(
+        BuildEventStreamProtos.File.newBuilder()
+        .setName("stderr")
+        .setUri(stderr)
+        .build());
+    }
+    return GenericBuildEvent.protoChaining(this).setAction(actionBuilder.build()).build();
   }
 }
