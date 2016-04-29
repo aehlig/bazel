@@ -61,6 +61,12 @@ message BuildStarted {
   string options_description = 3;
 }
 
+// Payload of the event indicating the expansion of a target pattern.
+// The main information is in the chaining part: the id will contain the
+// target pattern that was expanded and the children id will contain the
+// target or target pattern it was expanded to.
+message PatternExpanded {}
+
 
 // Message describing a build event. Events will have an identifier that
 // is unique within a given build invocation; they also announce follow-up
@@ -75,5 +81,6 @@ message BuildEvent {
     Aborted aborted = 4;
     Progress progress = 5;
     BuildStarted started = 6;
+    PatternExpanded expanded = 7;
   };
 }
