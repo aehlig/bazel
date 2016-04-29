@@ -53,6 +53,14 @@ sh_test(
     data = [":test-deps"],
 )
 
+sh_test(
+    name = "build_event_stream_test",
+    size = "medium",
+    srcs = ["build_event_stream_test.sh"],
+    data = [":test-deps"],
+)
+
+
 test_suite(
     name = "all_tests",
     visibility = ["//visibility:public"],

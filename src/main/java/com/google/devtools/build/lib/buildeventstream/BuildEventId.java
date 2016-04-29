@@ -137,5 +137,10 @@ public final class BuildEventId implements Serializable {
     return new BuildEventId(
         BuildEventStreamProtos.BuildEventType.TARGET_COMPLETED, target, "", 0);
   }
+
+  public static BuildEventId actionCompleted(Label target) {
+    return new BuildEventId(
+        BuildEventStreamProtos.BuildEventType.ACTION_COMPLETED, target, "", 0);
+  }
 }
 
