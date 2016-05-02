@@ -90,6 +90,21 @@ message TargetComplete {
   bool success = 1;
 }
 
+// Payload of the event summarizing a test.
+message TestSummary {
+  // Total number of runs
+  int32 num_total = 1;
+
+  // Number of results that were cached.
+  int32 num_cached = 2;
+
+  // Path to logs of passed runs.
+  repeated string passed = 3;
+
+  // Path to logs of failed runs;
+  repeated string failed = 4;
+}
+
 
 // Message describing a build event. Events will have an identifier that
 // is unique within a given build invocation; they also announce follow-up
@@ -107,5 +122,6 @@ message BuildEvent {
     PatternExpanded expanded = 7;
     ActionExecuted action = 8;
     TargetComplete completed = 9;
+    TestSummary test_summary = 10;
   };
 }
