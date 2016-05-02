@@ -23,6 +23,7 @@ import com.google.devtools.build.lib.cmdline.Label;
 import com.google.devtools.build.lib.collect.nestedset.NestedSet;
 import com.google.devtools.build.lib.collect.nestedset.NestedSetBuilder;
 import com.google.devtools.build.lib.collect.nestedset.Order;
+import com.google.devtools.build.lib.packages.TargetUtils;
 import com.google.devtools.build.lib.util.Preconditions;
 import com.google.devtools.build.skyframe.SkyValue;
 
@@ -89,6 +90,9 @@ public final class TargetCompleteEvent implements SkyValue, BuildEvent {
     ImmutableList.Builder childrenBuilder = ImmutableList.builder();
     for (Label label : getRootCauses()) {
       childrenBuilder.add(BuildEventId.actionCompleted(label));
+    }
+    if (TargetUtils.isTestRule(target.getTarget())) {
+      childrenBuilder.add(BuildEventId.testSummary(target.getTarget().getLabel()));
     }
     return childrenBuilder.build();
   }

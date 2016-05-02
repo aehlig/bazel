@@ -20,6 +20,9 @@ import com.google.common.collect.Multimap;
 import com.google.devtools.build.lib.actions.Artifact;
 import com.google.devtools.build.lib.analysis.ConfiguredTarget;
 import com.google.devtools.build.lib.analysis.FilesToRunProvider;
+import com.google.devtools.build.lib.buildeventstream.BuildEvent;
+import com.google.devtools.build.lib.buildeventstream.BuildEventId;
+import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
 import com.google.devtools.build.lib.util.Preconditions;
 import com.google.devtools.build.lib.util.io.AnsiTerminalPrinter.Mode;
 import com.google.devtools.build.lib.vfs.Path;
@@ -28,6 +31,7 @@ import com.google.devtools.build.lib.view.test.TestStatus.FailedTestCasesStatus;
 import com.google.devtools.build.lib.view.test.TestStatus.TestCase;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +46,7 @@ import java.util.TreeMap;
  * No direct TestSummary methods (except the constructor) may mutate the object.
  */
 @VisibleForTesting // Ideally package-scoped.
-public class TestSummary implements Comparable<TestSummary> {
+public class TestSummary implements Comparable<TestSummary>, BuildEvent {
   /**
    * Builder class responsible for creating and altering TestSummary objects.
    */
@@ -445,5 +449,22 @@ public class TestSummary implements Comparable<TestSummary> {
     return status == BlazeTestStatus.PASSED
         ? Mode.INFO
         : (status == BlazeTestStatus.FLAKY ? Mode.WARNING : Mode.ERROR);
+  }
+
+  @Override
+  public BuildEventId getEventId() {
+    return BuildEventId.testSummary(target.getTarget().getLabel());
+  }
+
+  @Override
+  public Collection<BuildEventId> getChildrenEvents() {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public String getTextRepresentation() {
+    String text = GenericBuildEvent.textChaining(this);
+    text += "  test summary\n";
+    return text;
   }
 }
