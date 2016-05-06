@@ -25,6 +25,8 @@ import com.google.devtools.build.lib.collect.nestedset.NestedSet;
 import com.google.devtools.build.lib.collect.nestedset.NestedSetBuilder;
 import com.google.devtools.build.lib.collect.nestedset.Order;
 import com.google.devtools.build.lib.packages.TargetUtils;
+import com.google.devtools.build.lib.rules.test.TestProvider;
+import com.google.devtools.build.lib.rules.test.TestProvider.TestParams;
 import com.google.devtools.build.lib.util.Preconditions;
 import com.google.devtools.build.skyframe.SkyValue;
 
@@ -94,6 +96,14 @@ public final class TargetCompleteEvent implements SkyValue, BuildEvent {
     }
     if (TargetUtils.isTestRule(target.getTarget())) {
       childrenBuilder.add(BuildEventId.testSummary(target.getTarget().getLabel()));
+      if (!failed()) {
+        TestParams testParams = target.getProvider(TestProvider.class).getTestParams();
+        for (int shard = 0; shard < testParams.getShards(); shard++) {
+          for (int run = 0; run < testParams.getRuns(); run++) {
+            childrenBuilder.add(BuildEventId.testResult(target.getTarget().getLabel(), shard, run));
+          }
+        }
+      }
     }
     return childrenBuilder.build();
   }

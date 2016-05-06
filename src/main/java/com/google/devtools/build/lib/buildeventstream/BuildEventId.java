@@ -38,10 +38,12 @@ public final class BuildEventId implements Serializable {
   private final String opaque;
   @Nullable private final List<String> targetPattern;
   @Nullable private final Label target;
+  @Nullable private Integer shard;
+  @Nullable private Integer run;
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetPattern, target, opaque);
+    return Objects.hash(targetPattern, target, opaque, shard, run);
   }
 
   @Override
@@ -52,6 +54,8 @@ public final class BuildEventId implements Serializable {
     BuildEventId that = (BuildEventId) other;
     return Objects.equals(this.targetPattern, that.targetPattern)
         && Objects.equals(this.target, that.target)
+        && Objects.equals(this.shard, that.shard)
+        && Objects.equals(this.run, that.run)
         && Objects.equals(this.opaque, that.opaque);
   }
 
@@ -83,6 +87,12 @@ public final class BuildEventId implements Serializable {
         builder.addTargetPattern(s);
       }
     }
+    if (shard != null) {
+      builder.setShard(shard);
+    }
+    if (run != null) {
+      builder.setRun(run);
+    }
     return builder.build();
   }
 
@@ -103,6 +113,15 @@ public final class BuildEventId implements Serializable {
     this.target = null;
     this.opaque = opaque;
   }
+
+  public BuildEventId(Label target, int shard, int run, String opaque) {
+    this.targetPattern = null;
+    this.target = target;
+    this.opaque = opaque;
+    this.shard = shard;
+    this.run = run;
+  }
+
 
   public Label getTarget() {
     return target;
@@ -127,5 +146,10 @@ public final class BuildEventId implements Serializable {
   public static BuildEventId testSummary(Label target) {
     return new BuildEventId(target, "test summary");
   }
+
+  public static BuildEventId testResult(Label target, int shard, int run) {
+    return new BuildEventId(target, shard, run, "test result");
+  }
+
 }
 

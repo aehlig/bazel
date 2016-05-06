@@ -28,6 +28,8 @@ message BuildEventId {
   // the event refers to.
   repeated string target_pattern = 2;
   string target = 3;
+  int32 shard = 4;
+  int32 run = 5;
 }
 
 // Payload of a generic event with a human-readable description.
@@ -105,6 +107,12 @@ message TestSummary {
   repeated string failed = 4;
 }
 
+// Payload for the result of a single run a test.
+// TODO(aehlig): instead include TestResultData
+// from //src/main/protobuf:test_status_java_proto?
+message TestResult {
+  bool test_passed = 2;
+}
 
 // Message describing a build event. Events will have an identifier that
 // is unique within a given build invocation; they also announce follow-up
@@ -123,5 +131,6 @@ message BuildEvent {
     ActionExecuted action = 8;
     TargetComplete completed = 9;
     TestSummary test_summary = 10;
+    TestResult test_result = 11;
   };
 }
