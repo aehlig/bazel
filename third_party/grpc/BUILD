@@ -42,6 +42,7 @@ cc_binary(
         "-Ithird_party/grpc/include",
         "-Ithird_party/grpc",
     ],
+    linkopts = [ "-lm" ],
     visibility = ["//visibility:public"],
     deps = ["//third_party/protobuf:protoc_lib"],
 )
@@ -411,6 +412,7 @@ cc_library(
         "-std=gnu99",
         "-Wno-implicit-function-declaration",
     ],
+    linkopts = [ "-lm" ],
     includes = [
         ".",
         "include",
