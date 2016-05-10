@@ -133,4 +133,6 @@ message BuildEvent {
     TestSummary test_summary = 10;
     TestResult test_result = 11;
   };
+  // If true, this is the last message for the current build.
+  bool final_event = 12;
 }

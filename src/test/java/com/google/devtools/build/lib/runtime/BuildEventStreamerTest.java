@@ -82,6 +82,9 @@ public class BuildEventStreamerTest {
     List<BuildEvent> finalStream = transport.getEvents();
     assertEquals(2, finalStream.size());
     assertEquals(ProgressEvent.INITIAL_PROGRESS_UPDATE, finalStream.get(1).getEventId());
+    assertTrue(
+        "Last event should be marked as such",
+        finalStream.get(1).asStreamProto().getFinalEvent());
   }
 
   @Test

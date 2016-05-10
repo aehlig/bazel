@@ -23,6 +23,7 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventId;
 import com.google.devtools.build.lib.buildeventstream.BuildEventTransport;
 import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
 import com.google.devtools.build.lib.buildeventstream.AbortedEvent;
+import com.google.devtools.build.lib.buildeventstream.FinalBuildEvent;
 import com.google.devtools.build.lib.buildeventstream.ProgressEvent;
 import com.google.devtools.build.lib.buildtool.buildevent.BuildCompleteEvent;
 import com.google.devtools.build.lib.events.Event;
@@ -57,6 +58,7 @@ public class BuildEventStreamer implements EventHandler {
    */
   private void post(BuildEvent event) {
     BuildEvent linkEvent = null;
+    BuildEvent toPost = event;
     BuildEventId id = event.getEventId();
 
     synchronized(this) {
@@ -85,13 +87,17 @@ public class BuildEventStreamer implements EventHandler {
       for (BuildEventId childId : event.getChildrenEvents()) {
         announcedEvents.add(childId);
       }
+      if (announcedEvents.size() == postedEvents.size()) {
+        // This was the last event for the given build.
+        toPost = new FinalBuildEvent(toPost);
+      }
     }
 
     for (BuildEventTransport transport : transports) {
       if (linkEvent != null) {
         transport.sendBuildEvent(linkEvent);
       }
-      transport.sendBuildEvent(event);
+      transport.sendBuildEvent(toPost);
     }
   }
 
