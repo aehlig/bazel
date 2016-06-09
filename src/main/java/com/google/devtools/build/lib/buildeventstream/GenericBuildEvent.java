@@ -44,7 +44,10 @@ public class GenericBuildEvent implements BuildEvent {
         BuildEventStreamProtos.BuildEvent.newBuilder();
     builder.setId(event.getEventId().asStreamProto());
     for (BuildEventId childId : event.getChildrenEvents()) {
-      builder.addChildren(childId.asStreamProto());
+      builder.addChildren(
+          BuildEventStreamProtos.ChildEventId.newBuilder()
+          .setId(childId.asStreamProto())
+          .build());
     }
     return builder;
   }
