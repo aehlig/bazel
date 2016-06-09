@@ -24,6 +24,7 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventTransport;
 import com.google.devtools.build.lib.buildeventstream.GenericBuildEvent;
 import com.google.devtools.build.lib.buildeventstream.AbortedEvent;
 import com.google.devtools.build.lib.buildeventstream.ProgressEvent;
+import com.google.devtools.build.lib.buildeventstream.WithDuplicateChildrenMarked;
 import com.google.devtools.build.lib.buildtool.buildevent.BuildCompleteEvent;
 import com.google.devtools.build.lib.events.Event;
 import com.google.devtools.build.lib.events.EventHandler;
@@ -55,14 +56,16 @@ public class BuildEventStreamer implements EventHandler {
    * Moreover, link unannounced events to the progress stream; we only expect failure events to
    * come before their parents.
    */
-  private void post(BuildEvent event) {
+  private void post(BuildEvent originalEvent) {
+    BuildEvent event;
     BuildEvent linkEvent = null;
-    BuildEventId id = event.getEventId();
+    BuildEventId id = originalEvent.getEventId();
 
     synchronized(this) {
       if (announcedEvents == null) {
         announcedEvents = new HashSet<>();
         postedEvents = new HashSet<>();
+        event = originalEvent;
         if (!event.getChildrenEvents().contains(ProgressEvent.INITIAL_PROGRESS_UPDATE)) {
           linkEvent = ProgressEvent.progressChainIn(progressCount, event.getEventId());
           progressCount++;
@@ -72,6 +75,7 @@ public class BuildEventStreamer implements EventHandler {
           postedEvents.add(linkEvent.getEventId());
         }
       } else {
+        event = new WithDuplicateChildrenMarked(originalEvent, announcedEvents);
         if (!announcedEvents.contains(id)) {
           linkEvent = ProgressEvent.progressChainIn(progressCount, id);
           progressCount++;
