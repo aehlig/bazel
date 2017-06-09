@@ -28,6 +28,10 @@ cc_binary(
         "output_jar",
         "//third_party/zlib",
     ],
+    linkopts = select({
+     "//src:freebsd" : ["-lm"],
+     "//conditions:default" : [],
+    }),
 )
 
 cc_test(
